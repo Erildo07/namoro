@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Segurança</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        .quiz-container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        .question {
+            font-weight: bold;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 5px 0;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h2>Quiz de Segurança Cibernética</h2>
+        <div id="question-container">
+            <p class="question"></p>
+            <ul class="options"></ul>
+            <button id="next-btn">Próxima</button>
+        </div>
+        <p id="result"></p>
+        <button id="download-btn" style="display:none;">Baixar Respostas</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const quiz = [
+                { question: "O que é phishing?", options: ["Ataque de força bruta", "Golpe para roubar informações", "Método de criptografia", "Firewall avançado"], correct: 1 },
+                { question: "Qual senha é mais segura?", options: ["123456", "senha123", "P@ssw0rD!#2024", "abcdefg"], correct: 2 },
+                { question: "O que um firewall faz?", options: ["Protege contra engenharia social", "Impede acessos não autorizados", "Remove vírus automaticamente", "Serve como antivírus"], correct: 1 },
+                { question: "O que significa 2FA?", options: ["Dois servidores diferentes", "Dois tipos de autenticação", "Código secreto para criptografia", "Software antivírus"], correct: 1 },
+                { question: "Como se proteger de malware?", options: ["Baixar arquivos de qualquer site", "Evitar links suspeitos e manter antivírus", "Compartilhar senhas", "Não atualizar o sistema"], correct: 1 }
+            ];
+
+            let currentQuestion = 0;
+            let score = 0;
+            let userAnswers = [];
+
+            const questionEl = document.querySelector(".question");
+            const optionsEl = document.querySelector(".options");
+            const resultEl = document.getElementById("result");
+            const nextBtn = document.getElementById("next-btn");
+            const downloadBtn = document.getElementById("download-btn");
+
+            function loadQuestion() {
+                resultEl.textContent = "";
+                const q = quiz[currentQuestion];
+                questionEl.textContent = q.question;
+                optionsEl.innerHTML = "";
+                q.options.forEach((option, index) => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `<label><input type="radio" name="answer" value="${index}"> ${option}</label>`;
+                    optionsEl.appendChild(li);
+                });
+            }
+
+            nextBtn.addEventListener("click", function () {
+                const selected = document.querySelector("input[name='answer']:checked");
+                if (!selected) {
+                    resultEl.textContent = "Selecione uma resposta!";
+                    return;
+                }
+
+                let answerIndex = parseInt(selected.value);
+                let isCorrect = answerIndex === quiz[currentQuestion].correct;
+                userAnswers.push({
+                    question: quiz[currentQuestion].question,
+                    selectedAnswer: quiz[currentQuestion].options[answerIndex],
+                    correctAnswer: quiz[currentQuestion].options[quiz[currentQuestion].correct],
+                    isCorrect: isCorrect ? "✅ Correto" : "❌ Errado"
+                });
+
+                if (isCorrect) score++;
+
+                currentQuestion++;
+
+                if (currentQuestion < quiz.length) {
+                    loadQuestion();
+                } else {
+                    document.getElementById("question-container").innerHTML = `<h3>Você acertou ${score} de ${quiz.length} perguntas!</h3>`;
+                    downloadBtn.style.display = "block";
+                }
+            });
+
+            downloadBtn.addEventListener("click", function () {
+                let textContent = `Resultado do Quiz de Segurança Cibernética:\n\n`;
+                userAnswers.forEach((item, index) => {
+                    textContent += `${index + 1}. ${item.question}\n`;
+                    textContent += `   Sua resposta: ${item.selectedAnswer}\n`;
+                    textContent += `   Resposta correta: ${item.correctAnswer}\n`;
+                    textContent += `   ${item.isCorrect}\n\n`;
+                });
+                textContent += `Pontuação final: ${score} de ${quiz.length} perguntas.\n`;
+
+                let blob = new Blob([textContent], { type: "text/plain" });
+                let link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "resultado_quiz.txt";
+                link.click();
+            });
+
+            loadQuestion();
+        });
+    </script>
+</body>
+</html>
